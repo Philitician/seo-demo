@@ -1,34 +1,47 @@
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# Showcasing Next.js 13 SEO
 
-## Getting Started
+### Static metadata
 
-First, run the development server:
+Static metadata including 'title' and 'description' are set in the head of the home page at `app/page.tsx`.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
+```tsx
+# app/page.tsx
+export const metadata: Metadata = {
+  title: "Grønn Vekst",
+  description: "Grønn Vekst gir deg den beste jorden for å dyrke dine planter.",
+};
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### Dynamic metadata
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Dynamic metadata including 'title' and 'description' are set in the head of the product page at `app/product/[id].tsx`.
 
-This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-optimization) to automatically optimize and load Inter, a custom Google Font.
+```tsx
+interface ProductPageProps {
+  params: {
+    id: string;
+  };
+}
 
-## Learn More
+export const generateMetadata = async ({
+  params,
+}: ProductPageProps): Promise<Metadata> => {
+  // imagine this is a call to a database, CMS or API to get the product
+  const product = await db.getProductById(params.id);
+  return {
+    title: `Product ${product?.title}`,
+  };
+};
+```
 
-To learn more about Next.js, take a look at the following resources:
+Static pages for each product is generated at build time. This is important because it allows us to set the metadata for each product page at build time, optimizing for SEO.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+```tsx
+export const generateStaticParams = async () => {
+  // imagine this is a call to a database, CMS or API to get all products
+  const products = await db.getProducts();
+  return products.map((product) => ({
+    id: product.id,
+  }));
+};
+```
